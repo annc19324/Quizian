@@ -9,6 +9,11 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
     title: 'Quizian - Ứng dụng học tập trắc nghiệm thông minh',
     description: 'Tạo, chia sẻ và ôn tập các bài trắc nghiệm một cách dễ dàng và hiệu quả',
+    icons: {
+        icon: '/quizian.ico',
+        shortcut: '/quizian.ico',
+        apple: '/quizian.ico',
+    },
 }
 
 export default function RootLayout({

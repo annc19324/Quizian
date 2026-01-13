@@ -175,7 +175,7 @@ function DashboardContent() {
                                     Lịch sử
                                 </motion.button>
                             </Link>
-                            <a href="/app-release.apk" download className="w-full md:w-auto">
+                            <a href="/quizian-app.apk" download className="w-full md:w-auto">
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}

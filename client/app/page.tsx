@@ -31,7 +31,7 @@ export default function HomePage() {
     ];
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 pt-16 md:pt-4">
+        <div className="min-h-screen flex items-center justify-center p-4 pt-56 md:pt-4">
             <div className="max-w-6xl w-full">
                 {/* Hero Section */}
                 <motion.div
