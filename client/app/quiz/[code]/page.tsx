@@ -92,6 +92,11 @@ export default function TakeQuizPage() {
     const startQuiz = () => {
         if (!quiz) return;
 
+        if (quiz.questions.length === 0) {
+            toast.error('Bài trắc nghiệm này chưa có câu hỏi nào!');
+            return;
+        }
+
         let processedQuestions = quiz.questions.map((q) => ({ ...q }));
 
         if (shuffleQuestions) {
@@ -364,6 +369,20 @@ export default function TakeQuizPage() {
     }
 
     // Quiz Screen
+    // Ensure questions exist before accessing
+    if (!questions.length || !questions[currentIndex]) {
+        return (
+            <div className="min-h-screen flex items-center justify-center p-4">
+                <div className="glass rounded-2xl p-8 text-center">
+                    <p className="text-white text-xl mb-4">Đã có lỗi xảy ra hoặc không tìm thấy câu hỏi.</p>
+                    <button onClick={() => window.location.reload()} className="btn-primary">
+                        Tải lại trang
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     const currentQuestion = questions[currentIndex];
 
     return (
