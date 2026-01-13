@@ -291,28 +291,44 @@ function EditQuizContent() {
                     animate={{ opacity: 1 }}
                     className="glass rounded-2xl p-6"
                 >
-                    {/* Question Navigation */}
-                    <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                        {questions.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => setCurrentQuestionIndex(index)}
-                                className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-all ${currentQuestionIndex === index
-                                    ? 'bg-white text-primary-600'
-                                    : 'bg-white/10 text-white hover:bg-white/20'
-                                    }`}
+                    {/* Question Grid Navigation */}
+                    <div className="mb-8">
+                        <div className="flex items-center justify-between mb-4">
+                            <label className="text-white/80 font-medium">Danh sách câu hỏi:</label>
+                            <span className="text-white/60 text-sm">Tổng cộng: {questions.length} câu</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 py-2">
+                            {questions.map((q, index) => {
+                                // Simple check if question is "complete" (has text and one correct answer)
+                                const isComplete = q.question.trim() && q.answers.some(a => a.isCorrect && a.text.trim());
+
+                                return (
+                                    <button
+                                        key={index}
+                                        onClick={() => setCurrentQuestionIndex(index)}
+                                        className={`w-10 h-10 rounded-lg font-bold transition-all ${currentQuestionIndex === index
+                                            ? 'ring-2 ring-white scale-110 z-10'
+                                            : ''
+                                            } ${isComplete
+                                                ? 'bg-success-500/20 text-success-400 border border-success-500/30'
+                                                : 'bg-white/10 text-white'
+                                            }`}
+                                        title={q.question || `Câu ${index + 1}`}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                );
+                            })}
+                            <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={addQuestion}
+                                className="w-10 h-10 rounded-lg bg-primary-500 text-white flex items-center justify-center transition-all"
+                                title="Thêm câu mới"
                             >
-                                Câu {index + 1}
-                            </button>
-                        ))}
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={addQuestion}
-                            className="px-4 py-2 rounded-lg bg-primary-500 text-white font-semibold whitespace-nowrap"
-                        >
-                            <Plus className="w-5 h-5 inline" /> Thêm câu
-                        </motion.button>
+                                <Plus className="w-6 h-6" />
+                            </motion.button>
+                        </div>
                     </div>
 
                     {/* Current Question */}
