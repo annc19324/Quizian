@@ -54,7 +54,7 @@ model Attempt {
   quizTitle        String
   score            Int
   totalQuestions   Int
-  questionResults  Json     // Storing detailed results as JSON
+  questionResults  Json
   shuffleQuestions Boolean  @default(false)
   shuffleAnswers   Boolean  @default(false)
   completedAt      DateTime @default(now())

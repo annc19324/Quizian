@@ -26,7 +26,7 @@ export function parseQuizText(text: string): Array<{ question: string; answers: 
             let isCorrect = false;
             let answerText = line;
 
-            if (line.startsWith('*')) {
+            if (line.startsWith('@')) {
                 isCorrect = true;
                 answerText = line.substring(1).trim();
             }

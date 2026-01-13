@@ -374,11 +374,11 @@ function CreateQuizContent() {
                         </h3>
                         <p className="text-white/70 mb-4">
                             Định dạng: Mỗi câu hỏi bắt đầu bằng số, các đáp án viết dưới câu
-                            hỏi, đáp án đúng có dấu * ở đầu
+                            hỏi, đáp án đúng có dấu @ ở đầu
                         </p>
                         <div className="bg-white/5 rounded-lg p-4 mb-4">
                             <pre className="text-white/60 text-sm whitespace-pre-wrap">
-                                {`1 + 1 bằng mấy?\n*2\n3\n5\n6\n\n1 + 2 bằng mấy?\n2\n*3\n5\n6`}
+                                {`1. 1 + 1 bằng mấy?\n@2\n3\n5\n6\n\n2. 1 + 2 bằng mấy?\n2\n@3\n5\n6`}
                             </pre>
                         </div>
                         <textarea
