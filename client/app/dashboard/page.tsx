@@ -105,7 +105,7 @@ function DashboardContent() {
         }
     };
 
-    const handleDownload = async (quiz: Quiz, format: 'pdf' | 'word') => {
+    const handleDownload = async (quiz: Quiz, format: 'pdf' | 'word', withAnswers: boolean = false) => {
         const toastId = toast.loading(`Đang chuẩn bị file ${format.toUpperCase()}...`);
         try {
             // If it's my quiz, we use the ID-based route, otherwise we use share code
@@ -123,9 +123,9 @@ function DashboardContent() {
 
             if (res.ok) {
                 if (format === 'pdf') {
-                    exportToPDF(data.quiz);
+                    exportToPDF(data.quiz, withAnswers);
                 } else {
-                    await exportToWord(data.quiz);
+                    await exportToWord(data.quiz, withAnswers);
                 }
                 toast.success('Đã tải xuống!', { id: toastId });
             } else {
@@ -296,10 +296,10 @@ function DashboardContent() {
                                     <button
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            handleDownload(quiz, 'pdf');
+                                            handleDownload(quiz, 'pdf', false);
                                         }}
                                         className="btn-secondary p-2 flex items-center justify-center text-red-400 hover:text-red-300 transition"
-                                        title="Tải PDF"
+                                        title="Tải PDF (Đề)"
                                     >
                                         <FileDown className="w-4 h-4" />
                                     </button>
@@ -307,12 +307,36 @@ function DashboardContent() {
                                     <button
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            handleDownload(quiz, 'word');
+                                            handleDownload(quiz, 'pdf', true);
+                                        }}
+                                        className="btn-secondary p-2 flex items-center justify-center text-success-400 hover:text-success-300 transition relative"
+                                        title="Tải PDF (+Đáp án)"
+                                    >
+                                        <FileDown className="w-4 h-4" />
+                                        <span className="text-[10px] font-bold absolute -bottom-1 -right-1 bg-success-500 text-white rounded-full w-4 h-4 flex items-center justify-center border border-white/20">@</span>
+                                    </button>
+
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleDownload(quiz, 'word', false);
                                         }}
                                         className="btn-secondary p-2 flex items-center justify-center text-blue-400 hover:text-blue-300 transition"
-                                        title="Tải Word"
+                                        title="Tải Word (Đề)"
                                     >
                                         <FileText className="w-4 h-4" />
+                                    </button>
+
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleDownload(quiz, 'word', true);
+                                        }}
+                                        className="btn-secondary p-2 flex items-center justify-center text-primary-400 hover:text-primary-300 transition relative"
+                                        title="Tải Word (+Đáp án)"
+                                    >
+                                        <FileText className="w-4 h-4" />
+                                        <span className="text-[10px] font-bold absolute -bottom-1 -right-1 bg-primary-500 text-white rounded-full w-4 h-4 flex items-center justify-center border border-white/20">@</span>
                                     </button>
 
                                     {activeTab === 'my' && (

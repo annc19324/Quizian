@@ -292,25 +292,53 @@ export default function TakeQuizPage() {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 mb-6">
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => exportToPDF(quiz)}
-                            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition border border-red-500/30"
-                        >
-                            <FileDown className="w-5 h-5" />
-                            Tải PDF
-                        </motion.button>
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => exportToWord(quiz)}
-                            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition border border-blue-500/30"
-                        >
-                            <FileText className="w-5 h-5" />
-                            Tải Word
-                        </motion.button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div className="space-y-2">
+                            <p className="text-white/60 text-sm font-medium">Bản câu hỏi (Không đáp án):</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => exportToPDF(quiz, false)}
+                                    className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white/5 text-white/80 hover:bg-white/10 transition border border-white/10"
+                                >
+                                    <FileDown className="w-4 h-4" />
+                                    PDF
+                                </motion.button>
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => exportToWord(quiz, false)}
+                                    className="flex items-center justify-center gap-2 p-3 rounded-lg bg-white/5 text-white/80 hover:bg-white/10 transition border border-white/10"
+                                >
+                                    <FileText className="w-4 h-4" />
+                                    Word
+                                </motion.button>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-white/60 text-sm font-medium">Bản đầy đủ (Có đáp án @):</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => exportToPDF(quiz, true)}
+                                    className="flex items-center justify-center gap-2 p-3 rounded-lg bg-success-500/20 text-success-400 hover:bg-success-500/30 transition border border-success-500/30"
+                                >
+                                    <FileDown className="w-4 h-4" />
+                                    PDF
+                                </motion.button>
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => exportToWord(quiz, true)}
+                                    className="flex items-center justify-center gap-2 p-3 rounded-lg bg-success-500/20 text-success-400 hover:bg-success-500/30 transition border border-success-500/30"
+                                >
+                                    <FileText className="w-4 h-4" />
+                                    Word
+                                </motion.button>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="space-y-3 mb-6">
@@ -425,25 +453,47 @@ export default function TakeQuizPage() {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => exportToPDF(quiz)}
-                            className="flex items-center justify-center gap-2 p-4 rounded-xl bg-red-500 text-white font-bold transition hover:bg-red-600"
-                        >
-                            <FileDown className="w-6 h-6" />
-                            Xuất PDF
-                        </motion.button>
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => exportToWord(quiz)}
-                            className="flex items-center justify-center gap-2 p-4 rounded-xl bg-blue-600 text-white font-bold transition hover:bg-blue-700"
-                        >
-                            <FileText className="w-6 h-6" />
-                            Xuất Word
-                        </motion.button>
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => exportToPDF(quiz, false)}
+                                className="flex items-center justify-center gap-2 p-4 rounded-xl bg-white/10 text-white font-bold transition hover:bg-white/20 border border-white/10"
+                            >
+                                <FileDown className="w-5 h-5" />
+                                PDF (Đề)
+                            </motion.button>
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => exportToWord(quiz, false)}
+                                className="flex items-center justify-center gap-2 p-4 rounded-xl bg-white/10 text-white font-bold transition hover:bg-white/20 border border-white/10"
+                            >
+                                <FileText className="w-5 h-5" />
+                                Word (Đề)
+                            </motion.button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => exportToPDF(quiz, true)}
+                                className="flex items-center justify-center gap-2 p-4 rounded-xl bg-success-600 text-white font-bold transition hover:bg-success-700"
+                            >
+                                <FileDown className="w-5 h-5" />
+                                PDF (+Đáp án)
+                            </motion.button>
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => exportToWord(quiz, true)}
+                                className="flex items-center justify-center gap-2 p-4 rounded-xl bg-primary-600 text-white font-bold transition hover:bg-primary-700"
+                            >
+                                <FileText className="w-5 h-5" />
+                                Word (+Đáp án)
+                            </motion.button>
+                        </div>
                     </div>
                 </div>
             </div>

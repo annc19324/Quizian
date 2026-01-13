@@ -58,7 +58,7 @@ function HistoryContent() {
         }
     };
 
-    const handleDownload = async (quizId: string, title: string, format: 'pdf' | 'word') => {
+    const handleDownload = async (quizId: string, title: string, format: 'pdf' | 'word', withAnswers: boolean = false) => {
         const toastId = toast.loading(`Đang chuẩn bị file ${format.toUpperCase()}...`);
         try {
             // Fetch quiz by ID (authenticated)
@@ -69,9 +69,9 @@ function HistoryContent() {
 
             if (res.ok) {
                 if (format === 'pdf') {
-                    exportToPDF(data.quiz);
+                    exportToPDF(data.quiz, withAnswers);
                 } else {
-                    await exportToWord(data.quiz);
+                    await exportToWord(data.quiz, withAnswers);
                 }
                 toast.success('Đã tải xuống!', { id: toastId });
             } else {
@@ -224,20 +224,36 @@ function HistoryContent() {
                                                 </div>
                                             </div>
 
-                                            <div className="flex flex-col gap-2">
+                                            <div className="grid grid-cols-2 gap-2">
                                                 <button
-                                                    onClick={() => handleDownload(attempt.quizId, attempt.quizTitle, 'pdf')}
+                                                    onClick={() => handleDownload(attempt.quizId, attempt.quizTitle, 'pdf', false)}
                                                     className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition"
-                                                    title="Tải PDF"
+                                                    title="Tải PDF (Đề)"
                                                 >
                                                     <FileDown className="w-5 h-5" />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDownload(attempt.quizId, attempt.quizTitle, 'word')}
+                                                    onClick={() => handleDownload(attempt.quizId, attempt.quizTitle, 'pdf', true)}
+                                                    className="p-2 rounded-lg bg-success-500/10 text-success-500 hover:bg-success-500/20 transition relative"
+                                                    title="Tải PDF (+Đáp án)"
+                                                >
+                                                    <FileDown className="w-5 h-5" />
+                                                    <span className="text-[10px] font-bold absolute -bottom-1 -right-1 bg-success-500 text-white rounded-full w-4 h-4 flex items-center justify-center border border-white/20">@</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDownload(attempt.quizId, attempt.quizTitle, 'word', false)}
                                                     className="p-2 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 transition"
-                                                    title="Tải Word"
+                                                    title="Tải Word (Đề)"
                                                 >
                                                     <FileText className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDownload(attempt.quizId, attempt.quizTitle, 'word', true)}
+                                                    className="p-2 rounded-lg bg-primary-500/10 text-primary-500 hover:bg-primary-500/20 transition relative"
+                                                    title="Tải Word (+Đáp án)"
+                                                >
+                                                    <FileText className="w-5 h-5" />
+                                                    <span className="text-[10px] font-bold absolute -bottom-1 -right-1 bg-primary-500 text-white rounded-full w-4 h-4 flex items-center justify-center border border-white/20">@</span>
                                                 </button>
                                             </div>
                                         </div>

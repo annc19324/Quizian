@@ -22,7 +22,7 @@ interface Quiz {
 
 const getLetter = (index: number) => String.fromCharCode(65 + index); // A, B, C, D...
 
-export const exportToPDF = (quiz: Quiz) => {
+export const exportToPDF = (quiz: Quiz, withAnswers: boolean = false) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     let y = 20;
@@ -61,7 +61,8 @@ export const exportToPDF = (quiz: Quiz) => {
 
         doc.setFont('helvetica', 'normal');
         q.answers.forEach((a, aIndex) => {
-            const answerText = `    ${getLetter(aIndex)}. ${a.text}`;
+            const prefix = withAnswers && a.isCorrect ? '@' : '';
+            const answerText = `    ${prefix}${getLetter(aIndex)}. ${a.text}`;
             const splitAnswer = doc.splitTextToSize(answerText, pageWidth - 50);
             doc.text(splitAnswer, 20, y);
             y += splitAnswer.length * 7;
@@ -70,33 +71,36 @@ export const exportToPDF = (quiz: Quiz) => {
         y += 5; // space between questions
     });
 
-    // Add Answer Key at the end
-    doc.addPage();
-    y = 20;
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('ĐÁP ÁN', pageWidth / 2, y, { align: 'center' });
-    y += 15;
+    // Add Answer Key at the end only if withAnswers is true
+    if (withAnswers) {
+        doc.addPage();
+        y = 20;
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ĐÁP ÁN CHI TIẾT', pageWidth / 2, y, { align: 'center' });
+        y += 15;
 
-    doc.setFontSize(12);
-    quiz.questions.forEach((q, qIndex) => {
-        const correctAnswers = q.answers
-            .map((a, i) => a.isCorrect ? getLetter(i) : null)
-            .filter(a => a !== null);
+        doc.setFontSize(12);
+        quiz.questions.forEach((q, qIndex) => {
+            const correctAnswers = q.answers
+                .map((a, i) => a.isCorrect ? getLetter(i) : null)
+                .filter(a => a !== null);
 
-        doc.text(`Câu ${qIndex + 1}: ${correctAnswers.join(', ')}`, 20, y);
-        y += 7;
+            doc.text(`Câu ${qIndex + 1}: ${correctAnswers.join(', ')}`, 20, y);
+            y += 7;
 
-        if (y > 280) {
-            doc.addPage();
-            y = 20;
-        }
-    });
+            if (y > 280) {
+                doc.addPage();
+                y = 20;
+            }
+        });
+    }
 
-    doc.save(`${quiz.title.replace(/\s+/g, '_')}.pdf`);
+    const filename = `${quiz.title.replace(/\s+/g, '_')}${withAnswers ? '_Co_Dap_An' : ''}.pdf`;
+    doc.save(filename);
 };
 
-export const exportToWord = async (quiz: Quiz) => {
+export const exportToWord = async (quiz: Quiz, withAnswers: boolean = false) => {
     const questionsParagraphs: any[] = [];
 
     quiz.questions.forEach((q, qIndex) => {
@@ -114,12 +118,14 @@ export const exportToWord = async (quiz: Quiz) => {
         );
 
         q.answers.forEach((a, aIndex) => {
+            const prefix = withAnswers && a.isCorrect ? '@' : '';
             questionsParagraphs.push(
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `${getLetter(aIndex)}. ${a.text}`,
+                            text: `${prefix}${getLetter(aIndex)}. ${a.text}`,
                             size: 24,
+                            color: withAnswers && a.isCorrect ? "2ecc71" : "000000"
                         }),
                     ],
                     indent: { left: 720 },
@@ -129,66 +135,71 @@ export const exportToWord = async (quiz: Quiz) => {
         });
     });
 
-    const answerKeyParagraphs: any[] = [
+    const mainContent: any[] = [
         new Paragraph({
-            children: [new TextRun({ text: 'ĐÁP ÁN', bold: true, size: 32 })],
+            children: [
+                new TextRun({
+                    text: quiz.title,
+                    bold: true,
+                    size: 48,
+                }),
+            ],
             alignment: AlignmentType.CENTER,
-            spacing: { before: 800, after: 400 },
+            spacing: { after: 400 },
         }),
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: `Tác giả: ${quiz.username}`,
+                    italics: true,
+                    size: 24,
+                }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 400 },
+        }),
+        ...questionsParagraphs,
     ];
 
-    quiz.questions.forEach((q, qIndex) => {
-        const correctAnswers = q.answers
-            .map((a, i) => a.isCorrect ? getLetter(i) : null)
-            .filter(a => a !== null);
-
-        answerKeyParagraphs.push(
+    if (withAnswers) {
+        const answerKeyParagraphs: any[] = [
             new Paragraph({
-                children: [
-                    new TextRun({
-                        text: `Câu ${qIndex + 1}: ${correctAnswers.join(', ')}`,
-                        size: 24,
-                    }),
-                ],
-                spacing: { after: 100 },
-            })
-        );
-    });
+                children: [new TextRun({ text: 'ĐÁP ÁN CHI TIẾT', bold: true, size: 32 })],
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 800, after: 400 },
+            }),
+        ];
+
+        quiz.questions.forEach((q, qIndex) => {
+            const correctAnswers = q.answers
+                .map((a, i) => a.isCorrect ? getLetter(i) : null)
+                .filter(a => a !== null);
+
+            answerKeyParagraphs.push(
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: `Câu ${qIndex + 1}: ${correctAnswers.join(', ')}`,
+                            size: 24,
+                        }),
+                    ],
+                    spacing: { after: 100 },
+                })
+            );
+        });
+        mainContent.push(...answerKeyParagraphs);
+    }
 
     const doc = new Document({
         sections: [
             {
                 properties: {},
-                children: [
-                    new Paragraph({
-                        children: [
-                            new TextRun({
-                                text: quiz.title,
-                                bold: true,
-                                size: 48,
-                            }),
-                        ],
-                        alignment: AlignmentType.CENTER,
-                        spacing: { after: 400 },
-                    }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({
-                                text: `Tác giả: ${quiz.username}`,
-                                italics: true,
-                                size: 24,
-                            }),
-                        ],
-                        alignment: AlignmentType.CENTER,
-                        spacing: { after: 400 },
-                    }),
-                    ...questionsParagraphs,
-                    ...answerKeyParagraphs,
-                ],
+                children: mainContent,
             },
         ],
     });
 
     const blob = await Packer.toBlob(doc);
-    saveAs(blob, `${quiz.title.replace(/\s+/g, '_')}.docx`);
+    const filename = `${quiz.title.replace(/\s+/g, '_')}${withAnswers ? '_Co_Dap_An' : ''}.docx`;
+    saveAs(blob, filename);
 };
