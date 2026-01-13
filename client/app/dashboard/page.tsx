@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { motion } from 'framer-motion';
-import { Plus, Search, BookOpen, History, LogOut, Share2 } from 'lucide-react';
+import { Plus, Search, BookOpen, History, LogOut, Share2, Edit3, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -82,6 +82,26 @@ function DashboardContent() {
         const link = `${window.location.origin}/quiz/${code}`;
         navigator.clipboard.writeText(link);
         toast.success('Đã copy link chia sẻ!');
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Bạn có chắc chắn muốn xóa bài trắc nghiệm này? Hành động này không thể hoàn tác.')) return;
+
+        try {
+            const res = await fetch(`${API_URL}/quizzes/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                toast.success('Đã xóa thành công');
+                setMyQuizzes(prev => prev.filter(q => q._id !== id));
+            } else {
+                toast.error('Có lỗi xảy ra khi xóa');
+            }
+        } catch (error) {
+            toast.error('Không thể xóa bài viết');
+        }
     };
 
     const currentQuizzes = activeTab === 'my' ? myQuizzes : publicQuizzes;
