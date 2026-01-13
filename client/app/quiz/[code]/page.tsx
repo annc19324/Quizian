@@ -569,15 +569,17 @@ export default function TakeQuizPage() {
                                     whileTap={!questionResults[currentIndex] ? { scale: 0.98 } : {}}
                                     onClick={() => handleAnswerSelect(answerIndex)}
                                     disabled={!!questionResults[currentIndex]}
-                                    className={`w-full p-4 rounded-xl text-left font-medium transition-all ${getAnswerClass(
+                                    className={`w-full p-4 rounded-xl text-left font-medium transition-all flex items-start whitespace-normal break-words ${getAnswerClass(
                                         answerIndex,
                                         currentIndex
                                     )}`}
                                 >
-                                    <span className="inline-block w-8 font-bold mr-3">
+                                    <span className="inline-block w-8 font-bold mr-3 flex-shrink-0">
                                         {['A', 'B', 'C', 'D'][answerIndex]}.
                                     </span>
-                                    {answer.text}
+                                    <span className="flex-1">
+                                        {answer.text}
+                                    </span>
                                 </motion.button>
                             ))}
                         </div>

@@ -454,8 +454,7 @@ function EditQuizContent() {
                                         >
                                             {label}
                                         </button>
-                                        <input
-                                            type="text"
+                                        <textarea
                                             value={
                                                 questions[currentQuestionIndex].answers[answerIndex]
                                                     ? questions[currentQuestionIndex].answers[answerIndex].text
@@ -464,8 +463,14 @@ function EditQuizContent() {
                                             onChange={(e) =>
                                                 updateAnswer(answerIndex, e.target.value)
                                             }
-                                            className="flex-1 input-field"
+                                            className="flex-1 input-field py-3 min-h-[48px] resize-none"
                                             placeholder={`Đáp án ${label}`}
+                                            rows={1}
+                                            onInput={(e) => {
+                                                const target = e.target as HTMLTextAreaElement;
+                                                target.style.height = 'auto';
+                                                target.style.height = target.scrollHeight + 'px';
+                                            }}
                                         />
                                     </div>
                                 ))}
