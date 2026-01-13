@@ -560,7 +560,9 @@ export default function TakeQuizClient({ code }: { code: string }) {
                             </div>
                         )}
                         <h2 className="text-2xl font-bold text-white mb-6">
-                            Câu {currentIndex + 1}: {currentQuestion.question}
+                            {currentQuestion.question.toLowerCase().startsWith('câu')
+                                ? currentQuestion.question
+                                : `Câu ${currentIndex + 1}: ${currentQuestion.question}`}
                         </h2>
                         <div className="space-y-3">
                             {currentQuestion.answers.map((answer, answerIndex) => (

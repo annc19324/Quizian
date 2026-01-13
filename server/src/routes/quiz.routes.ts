@@ -103,7 +103,10 @@ router.get('/share/:code', async (req, res) => {
             where: { shareCode: req.params.code },
             include: {
                 questions: {
-                    include: { answers: true }
+                    orderBy: { id: 'asc' },
+                    include: {
+                        answers: { orderBy: { id: 'asc' } }
+                    }
                 },
                 user: { select: { username: true } }
             }
@@ -141,7 +144,10 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
             where: { id: Number(req.params.id) },
             include: {
                 questions: {
-                    include: { answers: true }
+                    orderBy: { id: 'asc' },
+                    include: {
+                        answers: { orderBy: { id: 'asc' } }
+                    }
                 }
             }
         });

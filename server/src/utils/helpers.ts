@@ -27,7 +27,7 @@ export function parseQuizText(text: string): Array<{ question: string; answers: 
             }
 
             currentQuestion = {
-                question: line.replace(questionStartRegex, '').trim(),
+                question: line.trim(),
                 answers: [],
             };
         } else if (currentQuestion) {
@@ -38,9 +38,6 @@ export function parseQuizText(text: string): Array<{ question: string; answers: 
                 isCorrect = true;
                 answerText = line.substring(1).trim();
             }
-
-            // Remove A., B., C. prefixes if present
-            answerText = answerText.replace(answerPrefixRegex, '');
 
             currentQuestion.answers.push({
                 text: answerText,
