@@ -77,6 +77,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
                 questions: {
                     create: finalQuestions.map((q: any) => ({
                         text: q.question,
+                        image: q.image, // Add image field
                         answers: {
                             create: q.answers.map((a: any) => ({
                                 text: a.text,
@@ -119,6 +120,7 @@ router.get('/share/:code', async (req, res) => {
             username: quiz.user.username,
             questions: quiz.questions.map(q => ({
                 question: q.text,
+                image: q.image,
                 answers: q.answers.map(a => ({
                     text: a.text,
                     isCorrect: a.isCorrect
@@ -154,6 +156,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
             ...quiz,
             questions: quiz.questions.map((q) => ({
                 question: q.text,
+                image: q.image,
                 answers: q.answers.map((a) => ({
                     text: a.text,
                     isCorrect: a.isCorrect
@@ -193,6 +196,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
                     questions: {
                         create: questions.map((q: any) => ({
                             text: q.question,
+                            image: q.image, // Add image
                             answers: {
                                 create: q.answers.map((a: any) => ({
                                     text: a.text,
