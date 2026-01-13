@@ -132,4 +132,105 @@ router.get('/share/:code', async (req, res) => {
     }
 });
 
+// Get Quiz by ID (Private - for editing)
+router.get('/:id', authenticate, async (req: AuthRequest, res) => {
+    try {
+        const quiz = await prisma.quiz.findUnique({
+            where: { id: Number(req.params.id) },
+            include: {
+                questions: {
+                    include: { answers: true }
+                }
+            }
+        });
+
+        if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
+        if (quiz.userId !== req.user!.userId) return res.status(403).json({ error: 'Unauthorized' });
+
+        // Transform for FE (similar to share route but simpler structure match)
+        // Actually the FE expects specific shape. Let's return raw or transformed?
+        // The Create page uses clean state. Let's return mapped nicely.
+        const mapped = {
+            ...quiz,
+            questions: quiz.questions.map((q) => ({
+                question: q.text,
+                answers: q.answers.map((a) => ({
+                    text: a.text,
+                    isCorrect: a.isCorrect
+                }))
+            }))
+        };
+
+        res.json({ quiz: mapped });
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching quiz' });
+    }
+});
+
+// Update Quiz
+router.put('/:id', authenticate, async (req: AuthRequest, res) => {
+    try {
+        const { title, description, questions, tags } = req.body;
+        const quizId = Number(req.params.id);
+
+        const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
+        if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
+        if (quiz.userId !== req.user!.userId) return res.status(403).json({ error: 'Unauthorized' });
+
+        if (!questions || questions.length === 0) {
+            return res.status(400).json({ error: 'Quiz must have at least 1 question' });
+        }
+
+        // Use transaction to delete old questions and create new ones
+        await prisma.$transaction([
+            prisma.question.deleteMany({ where: { quizId } }),
+            prisma.quiz.update({
+                where: { id: quizId },
+                data: {
+                    title,
+                    description,
+                    tags: tags || [],
+                    questions: {
+                        create: questions.map((q: any) => ({
+                            text: q.question,
+                            answers: {
+                                create: q.answers.map((a: any) => ({
+                                    text: a.text,
+                                    isCorrect: a.isCorrect
+                                }))
+                            }
+                        }))
+                    }
+                }
+            })
+        ]);
+
+        res.json({ message: 'Quiz updated successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error updating quiz' });
+    }
+});
+
+// Delete Quiz
+router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
+    try {
+        const quizId = Number(req.params.id);
+        const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
+
+        if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
+        if (quiz.userId !== req.user!.userId) return res.status(403).json({ error: 'Unauthorized' });
+
+        // Delete attempts first (since no cascade on attempts)
+        await prisma.attempt.deleteMany({ where: { quizId } });
+        // Delete quiz (cascades to questions/answers)
+        await prisma.quiz.delete({ where: { id: quizId } });
+
+        res.json({ message: 'Quiz deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error deleting quiz' });
+    }
+});
+
 export default router;

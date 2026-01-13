@@ -141,8 +141,8 @@ function DashboardContent() {
                     <button
                         onClick={() => setActiveTab('my')}
                         className={`px-6 py-3 rounded-lg font-semibold transition-all ${activeTab === 'my'
-                                ? 'bg-white text-primary-600'
-                                : 'glass text-white hover:bg-white/20'
+                            ? 'bg-white text-primary-600'
+                            : 'glass text-white hover:bg-white/20'
                             }`}
                     >
                         <BookOpen className="w-5 h-5 inline mr-2" />
@@ -151,8 +151,8 @@ function DashboardContent() {
                     <button
                         onClick={() => setActiveTab('explore')}
                         className={`px-6 py-3 rounded-lg font-semibold transition-all ${activeTab === 'explore'
-                                ? 'bg-white text-primary-600'
-                                : 'glass text-white hover:bg-white/20'
+                            ? 'bg-white text-primary-600'
+                            : 'glass text-white hover:bg-white/20'
                             }`}
                     >
                         <Search className="w-5 h-5 inline mr-2" />
@@ -229,17 +229,39 @@ function DashboardContent() {
                                         </span>
                                     </div>
                                 </Link>
-                                <div className="mt-4 pt-4 border-t border-white/20">
+                                <div className="mt-4 pt-4 border-t border-white/20 flex gap-2">
                                     <button
                                         onClick={(e) => {
                                             e.preventDefault();
                                             copyShareLink(quiz.shareCode);
                                         }}
-                                        className="w-full btn-secondary flex items-center justify-center gap-2 text-sm py-2"
+                                        className="flex-1 btn-secondary flex items-center justify-center gap-2 text-sm py-2"
+                                        title="Chia sẻ"
                                     >
                                         <Share2 className="w-4 h-4" />
                                         Chia sẻ
                                     </button>
+                                    {activeTab === 'my' && (
+                                        <>
+                                            <Link
+                                                href={`/quiz/edit/${quiz._id}`}
+                                                className="btn-secondary px-3 py-2 flex items-center justify-center text-blue-400 hover:text-blue-300 transition"
+                                                title="Sửa"
+                                            >
+                                                <Edit3 className="w-4 h-4" />
+                                            </Link>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    handleDelete(quiz._id);
+                                                }}
+                                                className="btn-secondary px-3 py-2 flex items-center justify-center text-error-400 hover:text-error-300 transition"
+                                                title="Xóa"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </motion.div>
                         ))}
