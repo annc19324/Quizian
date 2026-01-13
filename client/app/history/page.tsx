@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, Award, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { API_URL } from '@/lib/api';
 
 interface Attempt {
     _id: string;
@@ -38,7 +39,7 @@ function HistoryContent() {
 
     const fetchAttempts = async () => {
         try {
-            const res = await fetch('/api/attempts', {
+            const res = await fetch(`${API_URL}/attempts`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -204,10 +205,10 @@ function HistoryContent() {
                                     <div className="mt-4 w-full bg-white/10 rounded-full h-2">
                                         <div
                                             className={`h-2 rounded-full transition-all ${percentage >= 80
-                                                    ? 'bg-success-500'
-                                                    : percentage >= 50
-                                                        ? 'bg-yellow-400'
-                                                        : 'bg-error-500'
+                                                ? 'bg-success-500'
+                                                : percentage >= 50
+                                                    ? 'bg-yellow-400'
+                                                    : 'bg-error-500'
                                                 }`}
                                             style={{ width: `${percentage}%` }}
                                         />

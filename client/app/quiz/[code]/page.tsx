@@ -12,6 +12,7 @@ import {
     Home,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '@/lib/api';
 
 interface Answer {
     text: string;
@@ -63,7 +64,7 @@ export default function TakeQuizPage() {
 
     const fetchQuiz = async () => {
         try {
-            const res = await fetch(`/api/quizzes/share/${params.code}`);
+            const res = await fetch(`${API_URL}/quizzes/share/${params.code}`);
             const data = await res.json();
 
             if (!res.ok) {
@@ -168,7 +169,7 @@ export default function TakeQuizPage() {
 
         if (user && token) {
             try {
-                await fetch('/api/attempts', {
+                await fetch(`${API_URL}/attempts`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -396,12 +397,12 @@ export default function TakeQuizPage() {
                                 key={index}
                                 onClick={() => jumpToQuestion(index)}
                                 className={`w-10 h-10 rounded-lg font-semibold transition ${index === currentIndex
-                                        ? 'bg-white text-primary-600'
-                                        : index < currentIndex
-                                            ? questionResults[index]?.isCorrect
-                                                ? 'bg-success-500/50 text-white'
-                                                : 'bg-error-500/50 text-white'
-                                            : 'bg-white/10 text-white'
+                                    ? 'bg-white text-primary-600'
+                                    : index < currentIndex
+                                        ? questionResults[index]?.isCorrect
+                                            ? 'bg-success-500/50 text-white'
+                                            : 'bg-error-500/50 text-white'
+                                        : 'bg-white/10 text-white'
                                     }`}
                             >
                                 {index + 1}
