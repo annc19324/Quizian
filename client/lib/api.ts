@@ -3,7 +3,8 @@ const getInitialUrl = () => {
         const stored = localStorage.getItem('API_URL');
         if (stored) return stored;
     }
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    // Set online production URL as default for both web and mobile
+    return process.env.NEXT_PUBLIC_API_URL || 'https://quizian.onrender.com/api';
 };
 
 export const API_URL = getInitialUrl();
