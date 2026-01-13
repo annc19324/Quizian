@@ -63,6 +63,10 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
             finalQuestions = parseQuizText(pasteText);
         }
 
+        if (!finalQuestions || finalQuestions.length === 0) {
+            return res.status(400).json({ error: 'Bài trắc nghiệm phải có ít nhất 1 câu hỏi hợp lệ.' });
+        }
+
         const quiz = await prisma.quiz.create({
             data: {
                 title,
