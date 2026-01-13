@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Award, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Calendar, Award, TrendingUp, FileDown, FileText } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { API_URL } from '@/lib/api';
+import { exportToPDF, exportToWord } from '@/lib/export';
 
 interface Attempt {
     _id: string;
@@ -54,6 +55,30 @@ function HistoryContent() {
             toast.error(error.message || 'Không thể tải lịch sử');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDownload = async (quizId: string, title: string, format: 'pdf' | 'word') => {
+        const toastId = toast.loading(`Đang chuẩn bị file ${format.toUpperCase()}...`);
+        try {
+            // Fetch quiz by ID (authenticated)
+            const res = await fetch(`${API_URL}/quizzes/${quizId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                if (format === 'pdf') {
+                    exportToPDF(data.quiz);
+                } else {
+                    await exportToWord(data.quiz);
+                }
+                toast.success('Đã tải xuống!', { id: toastId });
+            } else {
+                toast.error('Lỗi khi lấy dữ liệu bài trắc nghiệm', { id: toastId });
+            }
+        } catch (error) {
+            toast.error('Không thể tải file', { id: toastId });
         }
     };
 
@@ -197,6 +222,23 @@ function HistoryContent() {
                                                 >
                                                     {percentage}%
                                                 </div>
+                                            </div>
+
+                                            <div className="flex flex-col gap-2">
+                                                <button
+                                                    onClick={() => handleDownload(attempt.quizId, attempt.quizTitle, 'pdf')}
+                                                    className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition"
+                                                    title="Tải PDF"
+                                                >
+                                                    <FileDown className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDownload(attempt.quizId, attempt.quizTitle, 'word')}
+                                                    className="p-2 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 transition"
+                                                    title="Tải Word"
+                                                >
+                                                    <FileText className="w-5 h-5" />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>

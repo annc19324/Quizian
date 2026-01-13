@@ -10,9 +10,14 @@ import {
     CheckCircle2,
     XCircle,
     Home,
+    FileDown,
+    FileText,
+    Download,
+    Plus
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { API_URL } from '@/lib/api';
+import { exportToPDF, exportToWord } from '@/lib/export';
 
 interface Answer {
     text: string;
@@ -21,6 +26,7 @@ interface Answer {
 
 interface Question {
     question: string;
+    image?: string;
     answers: Answer[];
 }
 
@@ -114,8 +120,30 @@ export default function TakeQuizPage() {
         setStarted(true);
     };
 
+    const getAnswerClass = (answerIndex: number, questionIdx: number) => {
+        const result = questionResults[questionIdx];
+        if (!result) {
+            return selectedAnswer === answerIndex && currentIndex === questionIdx
+                ? 'bg-primary-500 text-white'
+                : 'bg-white/10 text-white hover:bg-white/20';
+        }
+
+        const isCorrect = questions[questionIdx].answers[answerIndex].isCorrect;
+        const isUserAnswer = result.userAnswer === answerIndex;
+
+        if (isCorrect) {
+            return 'bg-success-500 text-white';
+        }
+
+        if (isUserAnswer && !isCorrect) {
+            return 'bg-error-500 text-white';
+        }
+
+        return 'bg-white/10 text-white/50';
+    };
+
     const handleAnswerSelect = (answerIndex: number) => {
-        if (showResult) return;
+        if (questionResults[currentIndex]) return; // Already answered
 
         setSelectedAnswer(answerIndex);
         setShowResult(true);
@@ -131,10 +159,12 @@ export default function TakeQuizPage() {
             isCorrect,
         };
 
-        setQuestionResults([...questionResults, result]);
+        const newResults = [...questionResults];
+        newResults[currentIndex] = result;
+        setQuestionResults(newResults);
 
         if (isCorrect) {
-            setScore(score + 1);
+            setScore(prev => prev + 1);
         }
 
         // Auto-advance after delay
@@ -142,7 +172,11 @@ export default function TakeQuizPage() {
             if (currentIndex < questions.length - 1) {
                 nextQuestion();
             } else {
-                finishQuiz([...questionResults, result]);
+                // Check if all answered
+                const answeredCount = newResults.filter(Boolean).length;
+                if (answeredCount === questions.length) {
+                    finishQuiz(newResults);
+                }
             }
         }, autoNextDelay);
     };
@@ -183,7 +217,7 @@ export default function TakeQuizPage() {
                     body: JSON.stringify({
                         quizId: quiz?._id,
                         quizTitle: quiz?.title,
-                        score: results.filter((r) => r.isCorrect).length,
+                        score: results.filter((r) => r?.isCorrect).length,
                         totalQuestions: questions.length,
                         questionResults: results,
                         shuffleQuestions,
@@ -196,25 +230,31 @@ export default function TakeQuizPage() {
         }
     };
 
-    const getAnswerClass = (answerIndex: number) => {
-        if (!showResult) {
-            return selectedAnswer === answerIndex
-                ? 'bg-primary-500 text-white'
-                : 'bg-white/10 text-white hover:bg-white/20';
+    const handleRedoFailed = () => {
+        // filter questions that were wrong or not answered
+        const failedIndices = questions.map((_, i) => i).filter(i => !questionResults[i]?.isCorrect);
+
+        if (failedIndices.length === 0) {
+            toast.success('Bạn đã làm đúng hết các câu rồi!');
+            return;
         }
 
-        const isCorrect = questions[currentIndex].answers[answerIndex].isCorrect;
-        const isSelected = selectedAnswer === answerIndex;
+        // We can either restart with only these questions or just clear their results
+        const newResults = [...questionResults];
+        failedIndices.forEach(i => {
+            newResults[i] = undefined as any;
+        });
 
-        if (isCorrect) {
-            return 'bg-success-500 text-white';
-        }
+        setQuestionResults(newResults);
+        // Recalculate score (only from the ones we didn't clear)
+        const newScore = newResults.filter(r => r?.isCorrect).length;
+        setScore(newScore);
 
-        if (isSelected && !isCorrect) {
-            return 'bg-error-500 text-white';
-        }
-
-        return 'bg-white/10 text-white/50';
+        setCurrentIndex(failedIndices[0]);
+        setSelectedAnswer(null);
+        setShowResult(false);
+        setFinished(false);
+        toast.success(`Đã đặt lại ${failedIndices.length} câu chưa đúng hoặc chưa làm`);
     };
 
     if (loading) {
@@ -250,6 +290,27 @@ export default function TakeQuizPage() {
                             <span className="font-semibold">Số câu hỏi:</span>{' '}
                             {quiz.questions.length}
                         </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => exportToPDF(quiz)}
+                            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition border border-red-500/30"
+                        >
+                            <FileDown className="w-5 h-5" />
+                            Tải PDF
+                        </motion.button>
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => exportToWord(quiz)}
+                            className="flex items-center justify-center gap-2 p-3 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition border border-blue-500/30"
+                        >
+                            <FileText className="w-5 h-5" />
+                            Tải Word
+                        </motion.button>
                     </div>
 
                     <div className="space-y-3 mb-6">
@@ -348,7 +409,7 @@ export default function TakeQuizPage() {
                         </div>
                     </div>
 
-                    <div className="flex gap-4">
+                    <div className="flex flex-col md:flex-row gap-4 mb-6">
                         <button
                             onClick={() => router.push('/dashboard')}
                             className="btn-secondary flex-1"
@@ -362,6 +423,27 @@ export default function TakeQuizPage() {
                         >
                             Làm lại
                         </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => exportToPDF(quiz)}
+                            className="flex items-center justify-center gap-2 p-4 rounded-xl bg-red-500 text-white font-bold transition hover:bg-red-600"
+                        >
+                            <FileDown className="w-6 h-6" />
+                            Xuất PDF
+                        </motion.button>
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => exportToWord(quiz)}
+                            className="flex items-center justify-center gap-2 p-4 rounded-xl bg-blue-600 text-white font-bold transition hover:bg-blue-700"
+                        >
+                            <FileText className="w-6 h-6" />
+                            Xuất Word
+                        </motion.button>
                     </div>
                 </div>
             </div>
@@ -408,29 +490,7 @@ export default function TakeQuizPage() {
                     </div>
                 </div>
 
-                {/* Question Grid */}
-                <div className="glass rounded-xl p-4 mb-6">
-                    <div className="flex flex-wrap gap-2">
-                        {questions.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => jumpToQuestion(index)}
-                                className={`w-10 h-10 rounded-lg font-semibold transition ${index === currentIndex
-                                    ? 'bg-white text-primary-600'
-                                    : index < currentIndex
-                                        ? questionResults[index]?.isCorrect
-                                            ? 'bg-success-500/50 text-white'
-                                            : 'bg-error-500/50 text-white'
-                                        : 'bg-white/10 text-white'
-                                    }`}
-                            >
-                                {index + 1}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Question Card */}
+                {/* Question Card First */}
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentIndex}
@@ -439,6 +499,15 @@ export default function TakeQuizPage() {
                         exit={{ opacity: 0, x: -50 }}
                         className="glass rounded-2xl p-8 mb-6"
                     >
+                        {currentQuestion.image && (
+                            <div className="mb-6 flex justify-center">
+                                <img
+                                    src={currentQuestion.image}
+                                    alt="Question Illustration"
+                                    className="max-h-64 rounded-lg object-contain shadow-lg bg-black/5"
+                                />
+                            </div>
+                        )}
                         <h2 className="text-2xl font-bold text-white mb-6">
                             {currentQuestion.question}
                         </h2>
@@ -446,12 +515,13 @@ export default function TakeQuizPage() {
                             {currentQuestion.answers.map((answer, answerIndex) => (
                                 <motion.button
                                     key={answerIndex}
-                                    whileHover={!showResult ? { scale: 1.02 } : {}}
-                                    whileTap={!showResult ? { scale: 0.98 } : {}}
+                                    whileHover={!questionResults[currentIndex] ? { scale: 1.02 } : {}}
+                                    whileTap={!questionResults[currentIndex] ? { scale: 0.98 } : {}}
                                     onClick={() => handleAnswerSelect(answerIndex)}
-                                    disabled={showResult}
+                                    disabled={!!questionResults[currentIndex]}
                                     className={`w-full p-4 rounded-xl text-left font-medium transition-all ${getAnswerClass(
-                                        answerIndex
+                                        answerIndex,
+                                        currentIndex
                                     )}`}
                                 >
                                     <span className="inline-block w-8 font-bold mr-3">
@@ -464,26 +534,59 @@ export default function TakeQuizPage() {
                     </motion.div>
                 </AnimatePresence>
 
-                {/* Navigation */}
-                <div className="flex gap-4">
+                {/* Question Grid Below */}
+                <div className="glass rounded-xl p-4 mb-6">
+                    <div className="flex flex-wrap gap-2">
+                        {questions.map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => jumpToQuestion(index)}
+                                className={`w-10 h-10 rounded-lg font-semibold transition ${index === currentIndex
+                                    ? 'ring-2 ring-white scale-110 z-10'
+                                    : ''
+                                    } ${questionResults[index]
+                                        ? questionResults[index].isCorrect
+                                            ? 'bg-success-500 text-white'
+                                            : 'bg-error-500 text-white'
+                                        : 'bg-white/10 text-white'
+                                    }`}
+                            >
+                                {index + 1}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Navigation & Extra tools */}
+                <div className="flex flex-col gap-4">
+                    <div className="flex gap-4">
+                        <button
+                            onClick={prevQuestion}
+                            disabled={currentIndex === 0}
+                            className="btn-secondary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <ArrowLeft className="w-5 h-5 inline mr-2" />
+                            Câu trước
+                        </button>
+                        <button
+                            onClick={
+                                currentIndex === questions.length - 1
+                                    ? () => finishQuiz(questionResults)
+                                    : nextQuestion
+                            }
+                            className="btn-primary flex-1"
+                        >
+                            {currentIndex === questions.length - 1 ? 'Hoàn thành' : 'Câu sau'}
+                            <ArrowRight className="w-5 h-5 inline ml-2" />
+                        </button>
+                    </div>
+
                     <button
-                        onClick={prevQuestion}
-                        disabled={currentIndex === 0}
-                        className="btn-secondary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={handleRedoFailed}
+                        className="btn-secondary w-full py-3 flex items-center justify-center gap-2 border-dashed border-white/20 hover:border-white/40"
                     >
-                        <ArrowLeft className="w-5 h-5 inline mr-2" />
-                        Câu trước
-                    </button>
-                    <button
-                        onClick={
-                            currentIndex === questions.length - 1
-                                ? () => finishQuiz(questionResults)
-                                : nextQuestion
-                        }
-                        className="btn-primary flex-1"
-                    >
-                        {currentIndex === questions.length - 1 ? 'Hoàn thành' : 'Câu sau'}
-                        <ArrowRight className="w-5 h-5 inline ml-2" />
+                        <Plus className="w-5 h-5" />
+                        Làm lại câu sai & câu chưa làm
                     </button>
                 </div>
             </div>

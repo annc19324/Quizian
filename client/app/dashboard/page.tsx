@@ -3,11 +3,12 @@
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { motion } from 'framer-motion';
-import { Plus, Search, BookOpen, History, LogOut, Share2, Edit3, Trash2 } from 'lucide-react';
+import { Plus, Search, BookOpen, History, LogOut, Share2, Edit3, Trash2, FileDown, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { API_URL } from '@/lib/api';
+import { exportToPDF, exportToWord } from '@/lib/export';
 
 interface Quiz {
     _id: string;
@@ -101,6 +102,37 @@ function DashboardContent() {
             }
         } catch (error) {
             toast.error('Không thể xóa bài viết');
+        }
+    };
+
+    const handleDownload = async (quiz: Quiz, format: 'pdf' | 'word') => {
+        const toastId = toast.loading(`Đang chuẩn bị file ${format.toUpperCase()}...`);
+        try {
+            // If it's my quiz, we use the ID-based route, otherwise we use share code
+            const url = activeTab === 'my'
+                ? `${API_URL}/quizzes/${quiz._id}`
+                : `${API_URL}/quizzes/share/${quiz.shareCode}`;
+
+            const headers: any = {};
+            if (activeTab === 'my') {
+                headers.Authorization = `Bearer ${token}`;
+            }
+
+            const res = await fetch(url, { headers });
+            const data = await res.json();
+
+            if (res.ok) {
+                if (format === 'pdf') {
+                    exportToPDF(data.quiz);
+                } else {
+                    await exportToWord(data.quiz);
+                }
+                toast.success('Đã tải xuống!', { id: toastId });
+            } else {
+                toast.error('Lỗi khi lấy dữ liệu bài trắc nghiệm', { id: toastId });
+            }
+        } catch (error) {
+            toast.error('Không thể tải file', { id: toastId });
         }
     };
 
@@ -255,12 +287,34 @@ function DashboardContent() {
                                             e.preventDefault();
                                             copyShareLink(quiz.shareCode);
                                         }}
-                                        className="flex-1 btn-secondary flex items-center justify-center gap-2 text-sm py-2"
+                                        className="btn-secondary p-2 flex items-center justify-center transition"
                                         title="Chia sẻ"
                                     >
                                         <Share2 className="w-4 h-4" />
-                                        Chia sẻ
                                     </button>
+
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleDownload(quiz, 'pdf');
+                                        }}
+                                        className="btn-secondary p-2 flex items-center justify-center text-red-400 hover:text-red-300 transition"
+                                        title="Tải PDF"
+                                    >
+                                        <FileDown className="w-4 h-4" />
+                                    </button>
+
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleDownload(quiz, 'word');
+                                        }}
+                                        className="btn-secondary p-2 flex items-center justify-center text-blue-400 hover:text-blue-300 transition"
+                                        title="Tải Word"
+                                    >
+                                        <FileText className="w-4 h-4" />
+                                    </button>
+
                                     {activeTab === 'my' && (
                                         <>
                                             <Link
