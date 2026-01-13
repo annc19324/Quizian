@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Plus, Trash2, Save, FileText, Edit3 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, FileText, Edit3, Image as ImageIcon, X, Upload } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { API_URL } from '@/lib/api';
@@ -17,6 +17,7 @@ interface Answer {
 
 interface Question {
     question: string;
+    image?: string;
     answers: Answer[];
 }
 
@@ -341,6 +342,83 @@ function EditQuizContent() {
                                 rows={3}
                                 placeholder="Nhập nội dung câu hỏi"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-white/80 mb-2 font-medium">
+                                Hình ảnh (tùy chọn)
+                            </label>
+
+                            {questions[currentQuestionIndex].image ? (
+                                <div className="relative inline-block">
+                                    <img
+                                        src={questions[currentQuestionIndex].image}
+                                        alt="Question"
+                                        className="h-48 w-auto rounded-lg object-contain bg-black/20"
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            const newQuestions = [...questions];
+                                            newQuestions[currentQuestionIndex].image = undefined;
+                                            setQuestions(newQuestions);
+                                        }}
+                                        className="absolute -top-2 -right-2 bg-error-500 text-white p-1 rounded-full hover:bg-error-600 transition"
+                                        title="Xóa ảnh"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div>
+                                    <input
+                                        type="file"
+                                        id="image-upload"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={async (e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+
+                                            if (file.size > 5 * 1024 * 1024) {
+                                                toast.error('Ảnh không được quá 5MB');
+                                                return;
+                                            }
+
+                                            const formData = new FormData();
+                                            formData.append('image', file);
+
+                                            const toastId = toast.loading('Đang tải ảnh lên...');
+
+                                            try {
+                                                const res = await fetch(`${API_URL}/upload`, {
+                                                    method: 'POST',
+                                                    body: formData,
+                                                });
+                                                const data = await res.json();
+
+                                                if (!res.ok) throw new Error(data.error || 'Lỗi tải ảnh');
+
+                                                const newQuestions = [...questions];
+                                                newQuestions[currentQuestionIndex].image = data.url;
+                                                setQuestions(newQuestions);
+                                                toast.success('Đã tải ảnh lên', { id: toastId });
+                                            } catch (error) {
+                                                toast.error('Không thể tải ảnh', { id: toastId });
+                                            }
+
+                                            // Reset input
+                                            e.target.value = '';
+                                        }}
+                                    />
+                                    <label
+                                        htmlFor="image-upload"
+                                        className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border border-dashed border-white/30 rounded-lg text-white/70 hover:text-white hover:border-white/60 transition"
+                                    >
+                                        <ImageIcon className="w-5 h-5" />
+                                        Thêm ảnh minh họa
+                                    </label>
+                                </div>
+                            )}
                         </div>
 
                         <div>

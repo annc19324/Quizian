@@ -1,50 +1,65 @@
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+import { Readable } from 'stream';
 
 const router = Router();
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadDir = 'uploads/';
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
-        }
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
     fileFilter: (req, file, cb) => {
         const allowedTypes = /jpeg|jpg|png|gif|webp/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
         const mimetype = allowedTypes.test(file.mimetype);
 
-        if (extname && mimetype) {
+        if (mimetype) {
             return cb(null, true);
         } else {
             cb(new Error('Only images are allowed (jpeg, jpg, png, gif, webp)'));
         }
-    }
+    },
 });
 
-router.post('/', upload.single('image'), (req, res) => {
+router.post('/', upload.single('image'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        // Return correct URL format
-        const imageUrl = `/uploads/${req.file.filename}`;
-        res.json({ url: imageUrl });
+        // Upload to Cloudinary using stream
+        const uploadStream = () => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: 'quizian',
+                    },
+                    (error, result) => {
+                        if (error) return reject(error);
+                        resolve(result);
+                    }
+                );
+
+                // Write buffer to stream
+                const bufferStream = new Readable();
+                bufferStream.push(req.file!.buffer);
+                bufferStream.push(null);
+                bufferStream.pipe(stream);
+            });
+        };
+
+        const result: any = await uploadStream();
+
+        res.json({ url: result.secure_url });
     } catch (error) {
+        console.error('Upload Error:', error);
         res.status(500).json({ error: 'Error uploading file' });
     }
 });
