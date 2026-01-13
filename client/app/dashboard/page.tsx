@@ -281,7 +281,7 @@ function DashboardContent() {
                                         </span>
                                     </div>
                                 </Link>
-                                <div className="mt-4 pt-4 border-t border-white/20 flex gap-2">
+                                <div className="mt-4 pt-4 border-t border-white/20 flex flex-wrap gap-2">
                                     <button
                                         onClick={(e) => {
                                             e.preventDefault();
