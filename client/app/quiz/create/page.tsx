@@ -373,12 +373,11 @@ function CreateQuizContent() {
                             Dán nội dung câu hỏi
                         </h3>
                         <p className="text-white/70 mb-4">
-                            Định dạng: Mỗi câu hỏi bắt đầu bằng số, các đáp án viết dưới câu
-                            hỏi, đáp án đúng có dấu @ ở đầu
+                            Định dạng: "Câu [số]: [Nội dung]", đáp án bắt đầu bằng A, B, C... Đáp án đúng thêm dấu @ ở trước.
                         </p>
                         <div className="bg-white/5 rounded-lg p-4 mb-4">
                             <pre className="text-white/60 text-sm whitespace-pre-wrap">
-                                {`1. 1 + 1 bằng mấy?\n@2\n3\n5\n6\n\n2. 1 + 2 bằng mấy?\n2\n@3\n5\n6`}
+                                {`Câu 1: 1 + 1 bằng mấy?\n@A. 2\nB. 3\nC. 5\nD. 6\n\nCâu 2: 1 + 2 bằng mấy?\nA. 2\n@B. 3\nC. 5\nD. 6`}
                             </pre>
                         </div>
                         <textarea
