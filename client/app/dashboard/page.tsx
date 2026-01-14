@@ -80,7 +80,7 @@ function DashboardContent() {
     };
 
     const copyShareLink = (code: string) => {
-        const link = `${window.location.origin}/quiz/${code}`;
+        const link = `${window.location.origin}/quiz?code=${code}`;
         navigator.clipboard.writeText(link);
         toast.success('Đã copy link chia sẻ!');
     };
@@ -275,7 +275,7 @@ function DashboardContent() {
                                 whileHover={{ scale: 1.02, y: -5 }}
                                 className="card cursor-pointer"
                             >
-                                <Link href={`/quiz/${quiz.shareCode}`}>
+                                <Link href={`/quiz?code=${quiz.shareCode}`}>
                                     <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
                                         {quiz.title}
                                     </h3>
