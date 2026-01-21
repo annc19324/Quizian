@@ -12,16 +12,16 @@ router.post('/register', async (req, res) => {
         const { username, fullName, password, email } = req.body;
 
         if (!validateUsername(username)) {
-            return res.status(400).json({ error: 'Username must be at least 6 characters and contain only a-z, A-Z, 0-9, and dot (.)' });
+            return res.status(400).json({ error: 'Tên đăng nhập phải có ít nhất 6 ký tự, chỉ chứa chữ cái, số và dấu chấm' });
         }
         if (!validateFullName(fullName)) {
-            return res.status(400).json({ error: 'Full name must be 2-50 characters and contain only letters, spaces, and Vietnamese characters' });
+            return res.status(400).json({ error: 'Họ tên phải từ 2-50 ký tự' });
         }
         if (!validatePassword(password)) {
-            return res.status(400).json({ error: 'Password must be at least 8 characters, with 1 uppercase, 1 lowercase, 1 number, and 1 special character' });
+            return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt' });
         }
         if (email && !validateEmail(email)) {
-            return res.status(400).json({ error: 'Invalid email format' });
+            return res.status(400).json({ error: 'Email không hợp lệ' });
         }
 
         const existingUser = await prisma.user.findFirst({
@@ -34,7 +34,7 @@ router.post('/register', async (req, res) => {
         });
 
         if (existingUser) {
-            return res.status(400).json({ error: 'Username or Email already exists' });
+            return res.status(400).json({ error: 'Tên đăng nhập hoặc Email đã tồn tại' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -62,14 +62,14 @@ router.post('/login', async (req, res) => {
         const user = await prisma.user.findUnique({ where: { username: username.toLowerCase() } });
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không đúng' });
         }
 
         const token = jwt.sign({ userId: user.id, username: user.username, role: user.role }, process.env.JWT_SECRET || 'secret');
         res.json({ user: { id: user.id, username: user.username, fullName: user.fullName, email: user.email, role: user.role }, token });
     } catch (error: any) {
         console.error('Login error:', error);
-        res.status(500).json({ error: 'Error logging in', details: error.message });
+        res.status(500).json({ error: 'Lỗi đăng nhập', details: error.message });
     }
 });
 
