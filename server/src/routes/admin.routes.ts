@@ -47,7 +47,7 @@ router.get('/users', authenticate, isAdmin, async (req, res) => {
     }
 });
 
-router.delete('/users/:id', authenticate, isAdmin, async (req, res) => {
+router.delete('/users/:id', authenticate, isAdmin, async (req: AuthRequest, res) => {
     try {
         const id = Number(req.params.id);
         if (id === req.user!.userId) {
