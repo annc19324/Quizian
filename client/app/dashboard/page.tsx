@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { motion } from 'framer-motion';
-import { Plus, Search, BookOpen, History, LogOut, Share2, Edit3, Trash2, FileDown, FileText, Smartphone } from 'lucide-react';
+import { Plus, Search, BookOpen, History, LogOut, Share2, Edit3, Trash2, FileDown, FileText, Smartphone, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -165,6 +165,28 @@ function DashboardContent() {
                                     Tạo bài mới
                                 </motion.button>
                             </Link>
+                            {user?.role === 'ADMIN' && (
+                                <Link href="/admin">
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className="btn-secondary flex items-center justify-center gap-2 w-full md:w-auto bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20"
+                                    >
+                                        <LayoutDashboard className="w-5 h-5" />
+                                        Admin
+                                    </motion.button>
+                                </Link>
+                            )}
+                            <Link href="/profile">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="btn-secondary flex items-center justify-center gap-2 w-full md:w-auto"
+                                >
+                                    <Edit3 className="w-5 h-5" />
+                                    Cài đặt
+                                </motion.button>
+                            </Link>
                             <Link href="/history">
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
@@ -175,21 +197,11 @@ function DashboardContent() {
                                     Lịch sử
                                 </motion.button>
                             </Link>
-                            <a href="/quizian-app.apk" download className="w-full md:w-auto">
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="btn-secondary flex items-center justify-center gap-2 w-full md:w-auto bg-success-500/10 text-success-500 border-success-500/20 hover:bg-success-500/20 hover:border-success-500/30"
-                                >
-                                    <Smartphone className="w-5 h-5" />
-                                    Tải APK
-                                </motion.button>
-                            </a>
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={logout}
-                                className="btn-secondary flex items-center justify-center gap-2 w-full md:w-auto"
+                                className="btn-secondary flex items-center justify-center gap-2 w-full md:w-auto border-white/10 hover:border-red-500/30 hover:text-red-400 Transition"
                             >
                                 <LogOut className="w-5 h-5" />
                                 Đăng xuất

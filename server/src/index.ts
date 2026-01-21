@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.routes';
 import quizRoutes from './routes/quiz.routes';
 import attemptRoutes from './routes/attempt.routes';
 import uploadRoutes from './routes/upload.routes';
+import adminRoutes from './routes/admin.routes';
 import path from 'path';
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/attempts', attemptRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
     res.send('Quizian API is running');

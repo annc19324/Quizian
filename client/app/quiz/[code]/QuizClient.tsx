@@ -13,7 +13,9 @@ import {
     FileDown,
     FileText,
     Download,
-    Plus
+    Plus,
+    AlertCircle,
+    RotateCcw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { API_URL } from '@/lib/api';
@@ -62,6 +64,39 @@ export default function TakeQuizClient({ code }: { code: string }) {
     const [finished, setFinished] = useState(false);
     const [score, setScore] = useState(0);
     const [autoNextDelay] = useState(1000); // 1 second delay
+    const [isReporting, setIsReporting] = useState(false);
+
+    const handleReport = async () => {
+        if (!user) {
+            toast.error('Vui lòng đăng nhập để báo cáo');
+            return;
+        }
+
+        const reason = prompt('Nhập lý do báo cáo (VD: Sai đáp án, Nội dung không phù hợp...):');
+        if (!reason || reason.trim() === '') return;
+
+        setIsReporting(true);
+        try {
+            const res = await fetch(`${API_URL}/quizzes/${quiz?._id}/report`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ reason })
+            });
+
+            if (res.ok) {
+                toast.success('Đã gửi báo cáo. Cảm ơn ý kiến của bạn!');
+            } else {
+                toast.error('Gửi báo cáo thất bại');
+            }
+        } catch (error) {
+            toast.error('Lỗi khi gửi báo cáo');
+        } finally {
+            setIsReporting(false);
+        }
+    };
 
     useEffect(() => {
         if (code) {
@@ -378,6 +413,15 @@ export default function TakeQuizClient({ code }: { code: string }) {
                             <ArrowRight className="w-5 h-5 inline ml-2" />
                         </motion.button>
                     </div>
+
+                    <button
+                        onClick={handleReport}
+                        disabled={isReporting}
+                        className="w-full mt-4 text-white/40 hover:text-red-400 text-xs flex items-center justify-center transition"
+                    >
+                        <AlertCircle className="w-3 h-3 mr-1" />
+                        Báo cáo lỗi / nội dung vi phạm
+                    </button>
                 </motion.div>
             </div>
         );

@@ -10,12 +10,15 @@ datasource db {
 model User {
   id        Int       @id @default(autoincrement())
   username  String    @unique
+  email     String    @unique
   fullName  String
   password  String
+  role      String    @default("USER") // "USER" or "ADMIN"
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   quizzes   Quiz[]
   attempts  Attempt[]
+  reports   Report[]
 }
 
 model Quiz {
@@ -29,6 +32,7 @@ model Quiz {
   user        User       @relation(fields: [userId], references: [id])
   questions   Question[]
   attempts    Attempt[]
+  reports     Report[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -65,4 +69,18 @@ model Attempt {
   
   quizId           Int
   quiz             Quiz     @relation(fields: [quizId], references: [id])
+}
+
+model Report {
+  id        Int      @id @default(autoincrement())
+  reason    String
+  createdAt DateTime @default(now())
+  
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  
+  quizId    Int
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
 }

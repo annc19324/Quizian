@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { LogIn, ArrowLeft } from 'lucide-react';
+import { LogIn, ArrowLeft, Eye, EyeOff, User, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
 
@@ -29,7 +30,7 @@ export default function LoginPage() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="card max-w-md w-full relative"
+                className="glass-card max-w-md w-full p-8"
             >
                 <div className="flex justify-between items-start mb-6">
                     <Link href="/" className="inline-flex items-center text-white/70 hover:text-white transition">
@@ -38,60 +39,74 @@ export default function LoginPage() {
                     </Link>
                 </div>
 
-                <div className="flex items-center justify-center mb-8">
-                    <div className="p-4 rounded-full bg-gradient-to-br from-primary-400 to-primary-600">
+                <div className="flex items-center justify-center mb-6">
+                    <div className="p-4 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 shadow-lg shadow-primary-500/30">
                         <LogIn className="w-8 h-8 text-white" />
                     </div>
                 </div>
 
-                <h1 className="text-3xl font-bold text-white text-center mb-8">
-                    Đăng Nhập
+                <h1 className="text-3xl font-bold text-white text-center mb-2">
+                    Chào Mừng Trở Lại
                 </h1>
+                <p className="text-white/60 text-center mb-8">Đăng nhập để tiếp tục học tập</p>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-white/80 mb-2 font-medium">
+                        <label className="block text-white/80 mb-2 text-sm font-medium">
                             Tên đăng nhập
                         </label>
-                        <input
-                            type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            className="input-field"
-                            placeholder="Nhập tên đăng nhập"
-                            required
-                        />
+                        <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                            <input
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                className="input-field pl-10"
+                                placeholder="Nhập tên đăng nhập"
+                                required
+                            />
+                        </div>
                     </div>
 
                     <div>
-                        <label className="block text-white/80 mb-2 font-medium">
+                        <label className="block text-white/80 mb-2 text-sm font-medium">
                             Mật khẩu
                         </label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="input-field"
-                            placeholder="Nhập mật khẩu"
-                            required
-                        />
+                        <div className="relative">
+                            <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="input-field pl-10 pr-10"
+                                placeholder="••••••••"
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                            >
+                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
                     </div>
 
                     <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
                         type="submit"
                         disabled={loading}
-                        className="w-full btn-primary"
+                        className="w-full btn-primary py-4 text-lg font-bold shadow-xl shadow-primary-500/20"
                     >
                         {loading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
                     </motion.button>
                 </form>
 
-                <div className="mt-6 text-center">
-                    <p className="text-white/70">
+                <div className="mt-8 text-center border-t border-white/10 pt-6">
+                    <p className="text-white/50">
                         Chưa có tài khoản?{' '}
-                        <Link href="/register" className="text-white font-semibold hover:text-primary-300 transition">
+                        <Link href="/register" className="text-white font-bold hover:text-primary-300 transition-colors">
                             Đăng ký ngay
                         </Link>
                     </p>

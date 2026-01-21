@@ -229,8 +229,14 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
         const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
 
         if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
-        if (quiz.userId !== req.user!.userId) return res.status(403).json({ error: 'Unauthorized' });
 
+        // Admin can delete any quiz, user can only delete their own
+        if (req.user!.role !== 'ADMIN' && quiz.userId !== req.user!.userId) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+
+        // Delete reports first
+        await prisma.report.deleteMany({ where: { quizId } });
         // Delete attempts first (since no cascade on attempts)
         await prisma.attempt.deleteMany({ where: { quizId } });
         // Delete quiz (cascades to questions/answers)
@@ -240,6 +246,28 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error deleting quiz' });
+    }
+});
+
+// Report Quiz
+router.post('/:id/report', authenticate, async (req: AuthRequest, res) => {
+    try {
+        const quizId = Number(req.params.id);
+        const { reason } = req.body;
+
+        if (!reason) return res.status(400).json({ error: 'Reason is required' });
+
+        await prisma.report.create({
+            data: {
+                quizId,
+                userId: req.user!.userId,
+                reason
+            }
+        });
+
+        res.json({ message: 'Quiz reported successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error reporting quiz' });
     }
 });
 

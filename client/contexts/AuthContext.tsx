@@ -9,13 +9,16 @@ interface User {
     id: string;
     username: string;
     fullName: string;
+    email?: string;
+    role: 'USER' | 'ADMIN';
 }
 
 interface AuthContextType {
     user: User | null;
     token: string | null;
     login: (username: string, password: string) => Promise<void>;
-    register: (username: string, fullName: string, password: string) => Promise<void>;
+    register: (username: string, fullName: string, password: string, email: string) => Promise<void>;
+    updateProfile: (data: Partial<User> & { password?: string }) => Promise<void>;
     logout: () => void;
     loading: boolean;
 }
@@ -25,6 +28,7 @@ const AuthContext = createContext<AuthContextType>({
     token: null,
     login: async () => { },
     register: async () => { },
+    updateProfile: async () => { },
     logout: () => { },
     loading: true,
 });
@@ -87,6 +91,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(data.user);
 
             toast.success('Đăng nhập thành công!');
+
+            // If admin, maybe redirect to admin or just dashboard
             router.push('/dashboard');
         } catch (error: any) {
             toast.error(error.message);
@@ -94,12 +100,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const register = async (username: string, fullName: string, password: string) => {
+    const register = async (username: string, fullName: string, password: string, email: string) => {
         try {
             const res = await fetch(`${API_URL}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, fullName, password }),
+                body: JSON.stringify({ username, fullName, password, email }),
             });
 
             const data = await res.json();
@@ -120,6 +126,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const updateProfile = async (updateData: any) => {
+        try {
+            const res = await fetch(`${API_URL}/auth/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(updateData),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Cập nhật thất bại');
+            }
+
+            setUser(data.user);
+            toast.success('Cập nhật thông tin thành công!');
+        } catch (error: any) {
+            toast.error(error.message);
+            throw error;
+        }
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         setToken(null);
@@ -129,7 +160,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, register, logout, loading }}>
+        <AuthContext.Provider value={{ user, token, login, register, updateProfile, logout, loading }}>
             {children}
         </AuthContext.Provider>
     );
