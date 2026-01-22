@@ -4,14 +4,15 @@ export const PRIMARY_BACKEND = 'https://quizian.onrender.com';
 export const SECONDARY_BACKEND = 'https://quizian-k1gn.onrender.com';
 
 const getInitialUrl = () => {
-    // Priority: 1. Environment Variable, 2. Local Storage, 3. Fallback
-    const envUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (envUrl) return envUrl;
+    // Priority: 1. Local Storage (for failover), 2. Environment Variable, 3. Fallback
 
     if (typeof window !== 'undefined') {
         const stored = localStorage.getItem('API_URL');
         if (stored) return stored;
     }
+
+    const envUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (envUrl) return envUrl;
 
     return `${PRIMARY_BACKEND}/api`;
 };
@@ -30,8 +31,10 @@ export const updateApiUrl = (newUrl: string, reload = true) => {
 
 const checkBackendHealth = async () => {
     if (typeof window === 'undefined') return;
-    // Don't override strict environment variable
-    if (process.env.NEXT_PUBLIC_API_URL) return;
+
+    // Setup ignore for localhost development to prevent annoying switches
+    const envUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (envUrl && envUrl.includes('localhost')) return;
 
     try {
         const controller = new AbortController();
@@ -51,7 +54,7 @@ const checkBackendHealth = async () => {
 
         const currentUrl = localStorage.getItem('API_URL');
         const isCurrentlySecondary = currentUrl && currentUrl.includes(SECONDARY_BACKEND);
-        
+
         if (isPrimaryUp) {
             if (isCurrentlySecondary) {
                 toast.success('Backend chính đã hoạt động trở lại. Đang kết nối...', {
