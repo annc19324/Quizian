@@ -13,7 +13,15 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        'http://localhost:3000',
+        'https://quizian.vercel.app',
+        'https://quizian.onrender.com',
+        'https://quizian-k1gn.onrender.com'
+    ],
+    credentials: true
+}));
 app.use(express.json());
 
 // Serve static files from uploads directory (keeping this for backward compatibility or if local fallback is needed)
